@@ -121,9 +121,9 @@ class FirstViewController: UIViewController {
         
         scrollView.contentSize = CGSize(width: view.frame.size.width*2, height: scrollView.frame.size.height)
         
-        let imgs: [UIImageView] = [img, img2]
-        let label: [UILabel]    = [welcomeLabel, welcomeLabel1]
-        let subLabel: [UILabel] = [subwelcomeLabel, subwelcomeLabel1]
+        let imgs: [UIImageView] = [img2, img]
+        let label: [UILabel]    = [welcomeLabel1, welcomeLabel]
+        let subLabel: [UILabel] = [subwelcomeLabel1, subwelcomeLabel]
         scrollView.isPagingEnabled = true
         
         for i in 0..<2 {
@@ -155,15 +155,6 @@ class FirstViewController: UIViewController {
     @IBAction func Button1(_ sender: UIButton) {
         print("j")
     }
-    
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        switch segue.identifier {
-//        case "login":
-//            _ = segue.destination as! LoginViewController
-//        default:
-//            preconditionFailure("Unexpected segue identifier.")
-//        }
-//    }
 }
 
 extension FirstViewController: UIScrollViewDelegate {
