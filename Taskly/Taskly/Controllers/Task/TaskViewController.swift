@@ -53,12 +53,13 @@ class TaskViewController: UIViewController {
         
         TaskAPI.createTask(taskTitle: taskTitleTF.text!, taskDate: selectedDate, comment: note) { ( success )  in
             if success {
-                DispatchQueue.main.async {
+//                self.dismiss(animated: true, completion: nil)
+//                DispatchQueue.main.async {
                     let storyboard = UIStoryboard(name: "Tasks", bundle: nil)
                     let mainTabBarController = storyboard.instantiateViewController(identifier: "home")
                     mainTabBarController.modalPresentationStyle = .fullScreen
                     self.present(mainTabBarController, animated: true, completion: nil)
-                }
+//                }
             } else {
                 print("meh")
             }
