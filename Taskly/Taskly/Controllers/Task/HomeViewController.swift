@@ -21,17 +21,15 @@ class HomeViewController: UIViewController {
 //            }
 //        }
 //    }
+    var refreshControl: UIRefreshControl?
     var cell = TableViewCell()
-    var taskId = 0
     var headerTitles = ["Tasks", "Completed"]
     
     @IBOutlet weak var tableView: UITableView!
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
-        }
+        listTasks()
     }
     
     override func viewDidLoad() {
@@ -40,6 +38,18 @@ class HomeViewController: UIViewController {
         userName.text = name
         tableView.dataSource = self
         tableView.delegate = self
+        listTasks()
+        addRefresh()
+    }
+    
+    func addRefresh() {
+        refreshControl = UIRefreshControl()
+        refreshControl?.addTarget(self, action: #selector(refreshlist), for: .valueChanged)
+        tableView.addSubview(refreshControl!)
+    }
+    
+    @objc func refreshlist() {
+        refreshControl?.endRefreshing()
         listTasks()
     }
     
@@ -51,39 +61,6 @@ class HomeViewController: UIViewController {
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                 }
-            }
-        }
-    }
-//
-    @IBAction func tickButtonn(_ sender: UIButton) {
-//        let row = tableView.indexPathForSelectedRow?.row
-//        let id = userTasks[(row)!].taskID
-        if sender.tag == 1 {
-            sender.backgroundColor = .offWhite
-            sender.tag = 0
-            sender.isSelected = false
-            print(sender.tag)
-//            print("sender.isSelected: \(cell.isSelected)")
-            TaskAPI.isComplete(taskID: taskId, isCompleted: false) { (success) in
-                if success {
-//                    sender.backgroundColor = .offWhite
-//                    sender.tag = 0
-//                    sender.isSelected = false
-                }
-            }
-            
-        } else if sender.tag == 0 {
-                        sender.backgroundColor = .purple
-                        sender.tag = 1
-                        sender.isSelected = true
-            print(sender.tag)
-            TaskAPI.isComplete(taskID: taskId, isCompleted: true) { (success) in
-                if success {
-//                    sender.backgroundColor = .purple
-//                    sender.tag = 1
-//                    sender.isSelected = true
-                }
-                //            print("sender.isSelected: \(cell.isSelected)")
             }
         }
     }
@@ -101,8 +78,8 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell") as! TableViewCell
         let taskRow = userTasks[indexPath.row]
-        taskId = taskRow.taskID
-        print(taskId)
+        cell.index = indexPath.row
+        cell.cellDelegate = self
         cell.taskTitle.text = taskRow.taskName
         
         if taskRow.taskDate != nil {
@@ -111,7 +88,8 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             let fo = DateFormatter()
             fo.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
             let dueDate = fo.date(from: dueDateString!)!
-            let diffComponents = Calendar.current.dateComponents([.hour, .minute], from: now, to: dueDate)
+            let diffComponents = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: dueDate)
+            //let days = diffComponents.day
             let hours = diffComponents.hour
             let mins = diffComponents.minute
 
@@ -129,26 +107,26 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
                 }
             }
             
+//            if hours! > 24 {
+//                if days! > 0 {
+//                    cell.dueDateLabel.text = "Due date is in \(days!) mins"
+//                } else {
+//                    cell.dueDateLabel.text = "Due date has passed \(abs(days!)) mins ago"
+//                }
+//            }
+            
         } else {
             cell.dueDateLabel.text = ""
         }
         
         if taskRow.isCompleted == "1" {
             cell.checkButton.backgroundColor = .purple
-            cell.checkButton.isSelected = true
-            cell.checkButton.tag = 1
             cell.taskTitle.strikeThrough(true)
             
         } else if taskRow.isCompleted == "0" {
             cell.checkButton.backgroundColor = .offWhite
-            cell.checkButton.isSelected = false
-            cell.checkButton.tag = 0
             cell.taskTitle.strikeThrough(false)
         }
-        
-//        cell.taskTitle.strikeThrough(cell.checkButton.isSelected)
-//        print("cell.checkButton.isSelected: \(cell.checkButton.isSelected)")
-
         return cell
     }
     
@@ -170,32 +148,61 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         let index = indexPath.row
         let id = self.userTasks[index].taskID
 
-        let deleteAction = UIContextualAction(style: .normal, title: "",
+        let isCompeleteAction = UIContextualAction(style: .normal, title: "",
             handler: { (action, view, completionHandler) in
-//                tableView.deleteRows(at: [indexPath], with: .automatic)
+                
                 print("id: \(id)")
-                TaskAPI.deleteTask(taskID: id) { (success) in
+                if self.userTasks[index].isCompleted == "0" {
+                TaskAPI.isComplete(taskID: id, isCompleted: true) { (success) in
                     if success {
-                        print("task has been deleted successfully")
-//                        self.tableView.reloadData()
-                        #warning("Stupid way to reload table -need to get back to it-")
-                        let storyboard = UIStoryboard(name: "Tasks", bundle: nil)
-                        let mainTabBarController = storyboard.instantiateViewController(identifier: "home")
-                        mainTabBarController.modalPresentationStyle = .fullScreen
-                        mainTabBarController.modalTransitionStyle = .crossDissolve
-                        self.present(mainTabBarController, animated: true, completion: nil)
+                        print("task has been updated successfully")
+                        self.listTasks()
+                    }
+                }
+                } else if self.userTasks[index].isCompleted == "1" {
+                    TaskAPI.isComplete(taskID: id, isCompleted: false) { (success) in
+                        if success {
+                            print("task has been updated successfully")
+                            self.listTasks()
+                        }
                     }
                 }
                 completionHandler(true)
           })
         
-        deleteAction.backgroundColor = #colorLiteral(red: 1, green: 0.2210419178, blue: 0.3287946582, alpha: 1)
-        deleteAction.image = UIImage(systemName: "trash")
+        isCompeleteAction.backgroundColor = #colorLiteral(red: 0.5886604786, green: 0.5875415206, blue: 0.7572305799, alpha: 1)
+        isCompeleteAction.image = UIImage(systemName: "checkmark")
         
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        let configuration = UISwipeActionsConfiguration(actions: [isCompeleteAction])
         
         return configuration
     }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+       
+       let index = indexPath.row
+       let id = self.userTasks[index].taskID
+
+       let deleteAction = UIContextualAction(style: .normal, title: "",
+           handler: { (action, view, completionHandler) in
+//                tableView.deleteRows(at: [indexPath], with: .automatic)
+               print("id: \(id)")
+               TaskAPI.deleteTask(taskID: id) { (success) in
+                   if success {
+                       print("task has been deleted successfully")
+                   }
+               }
+           
+               completionHandler(true)
+         })
+        self.listTasks()
+       deleteAction.backgroundColor = #colorLiteral(red: 1, green: 0.2210419178, blue: 0.3287946582, alpha: 1)
+       deleteAction.image = UIImage(systemName: "trash")
+       
+       let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+       
+       return configuration
+   }
     
      func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         
@@ -217,5 +224,31 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         default:
             preconditionFailure("Unexpected segue identifier.")
         }
+    }
+}
+
+
+extension HomeViewController: TaskCellDelegate {
+    func updateTask(index: Int) {
+        
+        
+        let id = userTasks[index].taskID
+        print("protocol Index: \(id)")
+        if self.userTasks[index].isCompleted == "0" {
+            TaskAPI.isComplete(taskID: id, isCompleted: true) { (success) in
+                if success {
+                    print("task has been updated successfully")
+                    self.listTasks()
+                }
+            }
+        } else if self.userTasks[index].isCompleted == "1" {
+            TaskAPI.isComplete(taskID: id, isCompleted: false) { (success) in
+                if success {
+                    print("task has been updated successfully")
+                    self.listTasks()
+                }
+            }
+        }
+//        listTasks()
     }
 }

@@ -74,6 +74,7 @@ class TaskDetailsViewController: UIViewController {
             if success {
                 print("Saved")
 //                self.dismiss(animated: true, completion: nil)
+//                HomeViewController().listTasks()
                 let storyboard = UIStoryboard(name: "Tasks", bundle: nil)
                 let mainTabBarController = storyboard.instantiateViewController(identifier: "home")
                 mainTabBarController.modalPresentationStyle = .fullScreen

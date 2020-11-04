@@ -7,11 +7,18 @@
 
 import UIKit
 
+protocol TaskCellDelegate {
+    func updateTask(index: Int)
+}
+
 class TableViewCell: UITableViewCell {
 
     @IBOutlet weak var taskTitle: UILabel!
     @IBOutlet weak var checkButton: UIButton!
     @IBOutlet weak var dueDateLabel: UILabel!
+    
+    var cellDelegate: TaskCellDelegate!
+    var index: Int?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -22,23 +29,9 @@ class TableViewCell: UITableViewCell {
         checkButton.layer.borderColor = UIColor.lightGray.cgColor
     }
     
-//    @IBAction func switcher(_ sender: UIButton) {
-//        if sender.tag == 1 {
-//            sender.backgroundColor = .offWhite
-//            sender.tag = 0
-//            sender.isSelected = false
-//            print(sender.tag)
-//            
-//            print("sender.isSelected: \(sender.isSelected)")
-//            
-//        } else if sender.tag == 0 {
-//            sender.backgroundColor = .purple
-//            sender.tag = 1
-//            sender.isSelected = true
-//            print(sender.tag)
-//            print("sender.isSelected: \(sender.isSelected)")
-//        }
-//    }
+    @IBAction func switcher(_ sender: UIButton) {
+        cellDelegate.updateTask(index: index!)
+    }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

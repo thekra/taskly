@@ -161,7 +161,7 @@
                                                                 <color key="titleColor" name="Purple"/>
                                                             </state>
                                                             <connections>
-                                                                <action selector="tickButtonn:" destination="eFO-HV-1Jf" eventType="touchUpInside" id="0Mz-FS-g8a"/>
+                                                                <action selector="switcher:" destination="tkU-Vn-8jI" eventType="touchUpInside" id="fxc-0T-Z1S"/>
                                                             </connections>
                                                         </button>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pOj-gA-LAs">
