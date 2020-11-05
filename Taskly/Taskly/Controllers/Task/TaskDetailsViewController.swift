@@ -15,71 +15,69 @@ class TaskDetailsViewController: UIViewController {
     @IBOutlet weak var doneButton: UIButton!
     @IBOutlet weak var dueDateSwitch: UISwitch!
     
-    var formatter : DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-        return formatter
-    }()
     
     var selectedDate = ""
     var task: UserTask?
-    var note = ""
+    var homeInstance : HomeViewController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         taskTitleTF.text = task?.taskName
-        noteTV.text = task?.comment
+        noteTV.text      = task?.comment
         print(task?.taskDate as Any)
         
         if task?.taskDate != nil {
-        dueDateSwitch.isOn = true
+        dueDateSwitch.isOn  = true
         datepicker.isHidden = false
-        
-        let date = formatter.date(from: (task?.taskDate)!)!
-        datepicker.date = date
+        let date = self.formatter().date(from: (task?.taskDate)!)!
+        datepicker.date     = date
+            
         } else {
-            dueDateSwitch.isOn = false
+            dueDateSwitch.isOn  = false
             datepicker.isHidden = true
         }
-//        dueDate()
-        print("taskID: \((task?.taskID))")
+        
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     func setupUI() {
         taskTitleTF.layer.cornerRadius = 10
-        noteTV.layer.cornerRadius = 13
-        doneButton.layer.cornerRadius = 13
+        noteTV.layer.cornerRadius      = 13
+        doneButton.layer.cornerRadius  = 13
     }
     
     @IBAction func saveButton(_ sender: UIButton) {
         
-        #warning("Need some modification")
-        if task?.taskName == taskTitleTF.text {
-            print("task name has not changed")
-        }
-        
         if taskTitleTF.text == "" {
             print("can't leave task title empty")
+            self.showAlert(title: "Missing Task Title", message: "Please insert a task title")
         }
         
         if task?.comment == noteTV.text {
             print("task notes has not changed")
         }
         
-        TaskAPI.updateTask(taskID: (task?.taskID)!,
+        var note = ""
+        if noteTV.text == "" {
+            note = ""
+        } else {
+            note = noteTV.text
+        }
+        print("save button date \(selectedDate)")
+        TaskAPI.updateTask(taskID:    (task?.taskID)!,
                            taskTitle: taskTitleTF.text!,
-                           taskDate: selectedDate,
-                           comment: noteTV.text) { (success) in
+                           taskDate:  selectedDate,
+                           comment:   note) { (success) in
             if success {
                 print("Saved")
-//                self.dismiss(animated: true, completion: nil)
-//                HomeViewController().listTasks()
-                let storyboard = UIStoryboard(name: "Tasks", bundle: nil)
-                let mainTabBarController = storyboard.instantiateViewController(identifier: "home")
-                mainTabBarController.modalPresentationStyle = .fullScreen
-                mainTabBarController.modalTransitionStyle = .crossDissolve
-                self.present(mainTabBarController, animated: true, completion: nil)
+                self.homeInstance.listTasks()
+                self.dismiss(animated: true, completion: nil)
             }
         }
     }
@@ -87,10 +85,13 @@ class TaskDetailsViewController: UIViewController {
     @IBAction func dueDateSwitcher(_ sender: UISwitch) {
         if sender.isOn {
             datepicker.isHidden = false
-            selectedDate = formatter.string(from: datepicker.date)
+            selectedDate        = self.formatter().string(from: datepicker.date)
+            print(selectedDate)
         } else {
             datepicker.isHidden = true
-            selectedDate = ""
+            print("no date")
+            selectedDate        = ""
+            print("off switch: \(selectedDate)")
         }
     }
 }

@@ -19,15 +19,13 @@ class LoginViewController: UIViewController {
     }
     
     func setupUI() {
-        emailTF.setupTextField(emailTF, borderWidth: 0.8, cornerRadius: 13)
-        passwordTF.setupTextField(passwordTF, borderWidth: 0.8, cornerRadius: 13)
+        emailTF.layer.cornerRadius = 13
+        passwordTF.layer.cornerRadius = 13
         loginButton.layer.cornerRadius = 13
     }
     
     @IBAction func Login(_ sender: UIButton) {
-//        Loginn.login { (Loginn) in
-//            print(Loginn)
-//        }
+        
         //(email: emailTF.text!, password: passwordTF.text!)
         AthuenticationAPI.login(email: "nils.rath@example.net", password: "password") { (LoginResponse, success) in
             if success {

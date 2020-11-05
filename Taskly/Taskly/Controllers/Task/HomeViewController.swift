@@ -4,28 +4,32 @@
 //
 //  Created by Thekra Abuhaimed. on 16/03/1442 AH.
 //
-
+import UserNotifications
 import UIKit
 
-class HomeViewController: UIViewController {
+protocol updateTable {
+    func listTask()
+}
+
+class HomeViewController: UIViewController, updateTable {
+    func listTask() {
+        listTasks()
+    }
+    
     
     @IBOutlet weak var childView: UIView!
-    var checked = [[Int(),Int()]]
-    let name: String = UserDefaults.standard.string(forKey: "name")!
     @IBOutlet weak var userName: UILabel!
-    var userTasks = UserTasks()
-//    {
-//        didSet {
-//            DispatchQueue.main.async {
-//                self.tableView.reloadData()
-//            }
-//        }
-//    }
-    var refreshControl: UIRefreshControl?
-    var cell = TableViewCell()
-    var headerTitles = ["Tasks", "Completed"]
-    
     @IBOutlet weak var tableView: UITableView!
+    
+    var userTasks = UserTasks()
+    var completed = UserTasks()
+    var uncompleted = UserTasks()
+    var userTasksArray = UserTasks()
+    
+    var cell = TableViewCell()
+    let name: String = UserDefaults.standard.string(forKey: "name") ?? ""
+    var dataFilter = 1
+    var refreshControl: UIRefreshControl?
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -57,6 +61,8 @@ class HomeViewController: UIViewController {
         TaskAPI.listTasks { (UserTask, success) in
             if success {
                 self.userTasks = UserTask
+                self.uncompleted = self.userTasks.filter { $0.isCompleted == "0"}
+                self.completed = self.userTasks.filter { $0.isCompleted == "1"}
                 print(self.userTasks)
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
@@ -64,57 +70,89 @@ class HomeViewController: UIViewController {
             }
         }
     }
+    
+    @IBAction func switchFilter(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+        dataFilter = 0
+        print("dataFilter = 0")
+        case 1:
+        dataFilter = 1
+            print("dataFilter = 1")
+        case 2:
+            dataFilter = 2
+            print("dataFilter = 2")
+        default:
+            return
+        }
+        tableView.reloadData()
+    }
+    
+//    func scheduleNotification() {
+//
+//        print("scheduleNotification")
+//        let center = UNUserNotificationCenter.current()
+//        center.removeAllPendingNotificationRequests()
+//
+//        UIApplication.shared.applicationIconBadgeNumber += 1
+//        let content = UNMutableNotificationContent()
+//        content.title = "Watch out dude"
+//        content.body = "Your Task is due in 10 mins"
+//        content.categoryIdentifier = "alarm"
+//        content.userInfo = ["customData" : "fizzbuzz"]
+//        content.sound = .default
+//        content.badge = UIApplication.shared.applicationIconBadgeNumber as NSNumber
+//
+//        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+//        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+//        center.add(request)
+//    }
 }
 
-extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
+extension HomeViewController: UITableViewDataSource {
     
     // MARK: - UITableViewDataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.userTasks.count
+        var returnValue = 0
+        switch dataFilter {
+        case 0:
+            returnValue = self.uncompleted.count
+        case 1:
+            returnValue = self.userTasks.count
+        case 2:
+            returnValue = self.completed.count
+        default:
+            return 0
+        }
+        return returnValue
     }
-    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell") as! TableViewCell
-        let taskRow = userTasks[indexPath.row]
+        
+        switch dataFilter {
+                case 0:
+                   userTasksArray = uncompleted
+                case 1:
+                    userTasksArray = userTasks
+                case 2:
+                    userTasksArray = completed
+                default:
+                   userTasksArray = userTasks
+            }
+        
+        let taskRow = userTasksArray[indexPath.row]
         cell.index = indexPath.row
         cell.cellDelegate = self
         cell.taskTitle.text = taskRow.taskName
         
         if taskRow.taskDate != nil {
-            let now = Date()
-            let dueDateString = taskRow.taskDate
-            let fo = DateFormatter()
-            fo.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-            let dueDate = fo.date(from: dueDateString!)!
-            let diffComponents = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: dueDate)
-            //let days = diffComponents.day
-            let hours = diffComponents.hour
-            let mins = diffComponents.minute
-
-            if hours! < 0 {
-                cell.dueDateLabel.text = "Due date has passed \(abs(hours!)) hours ago"
+            if taskRow.isCompleted == "0" {
+                cell.dueDateLabel.text = checkRemaining(taskDueDate: taskRow.taskDate!)
             } else {
-                cell.dueDateLabel.text = "Due date is in \(hours!) hour"
+                cell.dueDateLabel.text = "completed"
             }
-            
-            if hours == 0 {
-                if mins! > 0 {
-                    cell.dueDateLabel.text = "Due date is in \(mins!) mins"
-                } else {
-                    cell.dueDateLabel.text = "Due date has passed \(abs(mins!)) mins ago"
-                }
-            }
-            
-//            if hours! > 24 {
-//                if days! > 0 {
-//                    cell.dueDateLabel.text = "Due date is in \(days!) mins"
-//                } else {
-//                    cell.dueDateLabel.text = "Due date has passed \(abs(days!)) mins ago"
-//                }
-//            }
-            
         } else {
             cell.dueDateLabel.text = ""
         }
@@ -130,36 +168,99 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
-    // MARK: - UITableViewDelegate
-    
-     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case 0:
-            return headerTitles[0]
-        case 1:
-            return headerTitles[1]
-        default:
+    func checkRemaining(taskDueDate: String) -> String {
+        var result = ""
+        
+        let now = Date()
+        let dueDate = self.formatter().date(from: taskDueDate)!
+        let diffComponents = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: dueDate)
+        guard let days = diffComponents.day, let hours = diffComponents.hour, let mins = diffComponents.minute else {
             return ""
         }
+        
+        if days >= 1 {
+            result = "Due date is in \(days) days"
+        } else if days < 0 {
+            result = "Due date has passed \(abs(days)) days ago"
+        } else if days == 0 {
+            if hours >= 1 {
+                result = "Due date is in \(hours) hour"
+            } else if hours < 0 {
+                result = "Due date has passed \(abs(hours)) hours ago"
+            } else if hours == 0 {
+                if mins >= 1 {
+                    result = "Due date is in \(mins) mins"
+                } else {
+                    result = "Due date has passed \(abs(mins)) mins ago"
+                }
+            }
+        }
+        
+//        if days == 0 {
+//            if hours < 0 {
+//                result = "Due date has passed \(abs(hours)) hours ago"
+//            } else {
+//                result = "Due date is in \(hours) hour"
+//            }
+//        }
+//        if hours == 0 {
+//            if mins > 0 {
+//                result = "Due date is in \(mins) mins"
+//            } else {
+//                result = "Due date has passed \(abs(mins)) mins ago"
+//            }
+//        }
+//        if hours < 0 {
+//            cell.dueDateLabel.text = "Due date has passed \(abs(hours)) hours ago"
+//        } else {
+//            cell.dueDateLabel.text = "Due date is in \(hours) hour"
+//        }
+//
+//        if hours == 0 {
+//            if mins > 0 {
+//                cell.dueDateLabel.text = "Due date is in \(mins) mins"
+//                if mins == 1 {
+//                scheduleNotification()
+//                }
+//            } else {
+//                cell.dueDateLabel.text = "Due date has passed \(abs(mins)) mins ago"
+//            }
+//        }
+//            if hours! > 24 {
+//                if days! > 0 {
+//                    cell.dueDateLabel.text = "Due date is in \(days!) mins"
+//                } else {
+//                    cell.dueDateLabel.text = "Due date has passed \(abs(days!)) mins ago"
+//                }
+//            }
+        return result
+    }
+}
+    
+    // MARK: - UITableViewDelegate
+    extension HomeViewController: UITableViewDelegate {
+        
+     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return "Tasks"
     }
     
      func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let index = indexPath.row
-        let id = self.userTasks[index].taskID
+        let id = self.userTasksArray[index].taskID
 
         let isCompeleteAction = UIContextualAction(style: .normal, title: "",
             handler: { (action, view, completionHandler) in
                 
                 print("id: \(id)")
-                if self.userTasks[index].isCompleted == "0" {
+                if self.userTasksArray[index].isCompleted == "0" {
                 TaskAPI.isComplete(taskID: id, isCompleted: true) { (success) in
                     if success {
                         print("task has been updated successfully")
                         self.listTasks()
                     }
                 }
-                } else if self.userTasks[index].isCompleted == "1" {
+                } else if self.userTasksArray[index].isCompleted == "1" {
                     TaskAPI.isComplete(taskID: id, isCompleted: false) { (success) in
                         if success {
                             print("task has been updated successfully")
@@ -181,21 +282,21 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
        
        let index = indexPath.row
-       let id = self.userTasks[index].taskID
+       let id = self.userTasksArray[index].taskID
 
        let deleteAction = UIContextualAction(style: .normal, title: "",
            handler: { (action, view, completionHandler) in
-//                tableView.deleteRows(at: [indexPath], with: .automatic)
+            
                print("id: \(id)")
                TaskAPI.deleteTask(taskID: id) { (success) in
                    if success {
                        print("task has been deleted successfully")
+                    self.listTasks()
                    }
                }
-           
                completionHandler(true)
          })
-        self.listTasks()
+        
        deleteAction.backgroundColor = #colorLiteral(red: 1, green: 0.2210419178, blue: 0.3287946582, alpha: 1)
        deleteAction.image = UIImage(systemName: "trash")
        
@@ -206,11 +307,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     
      func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         
-            let maskLayer = CALayer()
-            maskLayer.cornerRadius = 20
-            maskLayer.backgroundColor = UIColor.black.cgColor
-            maskLayer.frame = CGRect(x: cell.bounds.origin.x, y: cell.bounds.origin.y, width: cell.bounds.width, height: cell.bounds.height).insetBy(dx: 10, dy: 6)
-            cell.layer.mask = maskLayer
+        self.cellPadding(cell: cell, x: 10, y: 6)
         
     }
     
@@ -219,7 +316,12 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         case "taskDetails":
             if let des = segue.destination as? TaskDetailsViewController {
                 let row = tableView.indexPathForSelectedRow?.row
-                des.task = userTasks[(row)!]
+                des.task = userTasksArray[(row)!]
+                des.homeInstance = self
+            }
+        case "createTask" :
+            if let des = segue.destination as? TaskViewController {
+                des.homeInstance = self
             }
         default:
             preconditionFailure("Unexpected segue identifier.")
@@ -232,16 +334,16 @@ extension HomeViewController: TaskCellDelegate {
     func updateTask(index: Int) {
         
         
-        let id = userTasks[index].taskID
+        let id = userTasksArray[index].taskID
         print("protocol Index: \(id)")
-        if self.userTasks[index].isCompleted == "0" {
+        if self.userTasksArray[index].isCompleted == "0" {
             TaskAPI.isComplete(taskID: id, isCompleted: true) { (success) in
                 if success {
                     print("task has been updated successfully")
                     self.listTasks()
                 }
             }
-        } else if self.userTasks[index].isCompleted == "1" {
+        } else if self.userTasksArray[index].isCompleted == "1" {
             TaskAPI.isComplete(taskID: id, isCompleted: false) { (success) in
                 if success {
                     print("task has been updated successfully")
@@ -249,6 +351,5 @@ extension HomeViewController: TaskCellDelegate {
                 }
             }
         }
-//        listTasks()
     }
 }

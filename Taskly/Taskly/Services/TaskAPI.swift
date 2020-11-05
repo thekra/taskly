@@ -32,8 +32,9 @@ class TaskAPI {
             guard let data = data else { return }
             do {
                 let responseObject = try JSONDecoder().decode(UserTasks.self, from: data)
-                
-                completion(responseObject, true)
+                if response.statusCode == 200 {
+                    completion(responseObject, true)
+                }
                 
             } catch {
                 print(error)
