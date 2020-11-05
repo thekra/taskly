@@ -109,13 +109,13 @@
 			children = (
 				799EFFBF254CDE9900ED7779 /* AppDelegate.swift */,
 				799EFFC1254CDE9900ED7779 /* SceneDelegate.swift */,
+				79098E6A255415A400041B54 /* Notifications.swift */,
 				799EFFCD254CDE9D00ED7779 /* Info.plist */,
 				799E001F254E862300ED7779 /* Extensions */,
 				799EFFD8254CDFF000ED7779 /* Services */,
 				799EFFD7254CDFEA00ED7779 /* Models */,
 				799EFFD6254CDFE200ED7779 /* Views */,
 				799EFFD5254CDFD700ED7779 /* Controllers */,
-				79098E6A255415A400041B54 /* Notifications.swift */,
 			);
 			path = Taskly;
 			sourceTree = "<group>";

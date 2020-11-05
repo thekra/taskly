@@ -8,6 +8,10 @@
 import UserNotifications
 import UIKit
 
+protocol updateTable {
+    func handleUpdate()
+}
+
 class TaskViewController: UIViewController {
 
     @IBOutlet weak var taskTitleTF: UITextField!
@@ -29,11 +33,12 @@ class TaskViewController: UIViewController {
         setupUI()
         print("datePicker: \(datePicker.date)")
         selectedDate = self.formatter().string(from: datePicker.date)
+        print(selectedDate)
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
         let tap2: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.viewDismiss))
         view.addGestureRecognizer(tap)
         topView.addGestureRecognizer(tap2)
-        
+        datePicker.minimumDate = Date()
     }
     
     //MARK: - dismiss keyboard function
@@ -59,8 +64,6 @@ class TaskViewController: UIViewController {
     }
     
     func createTask() {
-                
-        // validation to minimum date
         
         if taskTitleTF.text == "" {
             self.showAlert(title: "Missing Task Title", message: "Please insert a task title")
@@ -73,19 +76,30 @@ class TaskViewController: UIViewController {
             note = notesTV.text
         }
         
-        TaskAPI.createTask(taskTitle: taskTitleTF.text!, taskDate: selectedDate, comment: note) { ( success )  in
+        
+        var dueDate: Date?
+        var date: String?
+        if dueDateSwitch.isOn {
+        dueDate = datePicker.date
+        date = formatter().string(from: dueDate!)
+        } else {
+            date = nil
+        }
+        print("-------",dueDate)
+        TaskAPI.createTask(taskTitle: taskTitleTF.text!, taskDate: date ?? "", comment: note) { ( success )  in
             if success {
                 
                 self.homeInstance.listTasks()
+//                self.delegate?.handleUpdate()
                 self.dismiss(animated: true, completion: nil)
             }
         }
     }
     
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//        self.delegate?.listTask()
-//    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.delegate?.handleUpdate()
+    }
     
     @IBAction func dueDateSwitcher(_ sender: UISwitch) {
         

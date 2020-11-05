@@ -14,6 +14,7 @@ class TaskDetailsViewController: UIViewController {
     @IBOutlet weak var datepicker: UIDatePicker!
     @IBOutlet weak var doneButton: UIButton!
     @IBOutlet weak var dueDateSwitch: UISwitch!
+    @IBOutlet weak var datePickerStackView: UIStackView!
     
     
     var selectedDate = ""
@@ -84,11 +85,11 @@ class TaskDetailsViewController: UIViewController {
     
     @IBAction func dueDateSwitcher(_ sender: UISwitch) {
         if sender.isOn {
-            datepicker.isHidden = false
+            datePickerStackView.isHidden = false
             selectedDate        = self.formatter().string(from: datepicker.date)
             print(selectedDate)
         } else {
-            datepicker.isHidden = true
+            datePickerStackView.isHidden = true
             print("no date")
             selectedDate        = ""
             print("off switch: \(selectedDate)")
