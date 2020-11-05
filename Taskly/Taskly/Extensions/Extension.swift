@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - UIView
 extension UIView {
     func setupTextField(_ textField: UITextField, borderWidth: CGFloat, cornerRadius: CGFloat) {
         textField.clipsToBounds = true
@@ -27,23 +28,39 @@ extension UIView {
     }
 }
 
-//extension String {
-//    func formatter(from: Date){
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-//        formatter.string(from: from)
-//        return formatter
-//    }
-//}
+// MARK: - UIViewController
+extension UIViewController {
+    
+    func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    func formatter() -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+        return formatter
+    }
+    
+    func cellPadding(cell: UITableViewCell, x: CGFloat, y: CGFloat) {
+        let maskLayer = CALayer()
+        maskLayer.cornerRadius = 20
+        maskLayer.backgroundColor = UIColor.black.cgColor
+        maskLayer.frame = CGRect(x: cell.bounds.origin.x, y: cell.bounds.origin.y, width: cell.bounds.width, height: cell.bounds.height).insetBy(dx: x, dy: y)
+        cell.layer.mask = maskLayer
+    }
+}
 
 extension Date {
 
     static func - (lhs: Date, rhs: Date) -> TimeInterval {
         return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
     }
-
 }
 
+
+// MARK: - UILabel
 extension UILabel {
     
     func strikeThrough(_ isStrikeThrough:Bool) {

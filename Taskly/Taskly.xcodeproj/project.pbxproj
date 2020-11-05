@@ -7,13 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		79098E6B255415A400041B54 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79098E6A255415A400041B54 /* Notifications.swift */; };
 		799E0010254DDCCD00ED7779 /* AuthAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E000F254DDCCD00ED7779 /* AuthAPI.swift */; };
 		799E0013254DE13300ED7779 /* EndPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E0012254DE13300ED7779 /* EndPoint.swift */; };
 		799E0016254DE55100ED7779 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E0015254DE55100ED7779 /* Router.swift */; };
 		799E0019254DE57700ED7779 /* Auth+Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E0018254DE57700ED7779 /* Auth+Router.swift */; };
 		799E001C254DE9A100ED7779 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E001B254DE9A100ED7779 /* NetworkService.swift */; };
 		799E0021254E863800ED7779 /* UIColor+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E0020254E863800ED7779 /* UIColor+extension.swift */; };
-		799E002B254EE8B900ED7779 /* UIView+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E002A254EE8B900ED7779 /* UIView+extension.swift */; };
+		799E002B254EE8B900ED7779 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799E002A254EE8B900ED7779 /* Extension.swift */; };
 		799EFFC0254CDE9900ED7779 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799EFFBF254CDE9900ED7779 /* AppDelegate.swift */; };
 		799EFFC2254CDE9900ED7779 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799EFFC1254CDE9900ED7779 /* SceneDelegate.swift */; };
 		799EFFC4254CDE9900ED7779 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799EFFC3254CDE9900ED7779 /* FirstViewController.swift */; };
@@ -36,13 +37,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		79098E6A255415A400041B54 /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		799E000F254DDCCD00ED7779 /* AuthAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAPI.swift; sourceTree = "<group>"; };
 		799E0012254DE13300ED7779 /* EndPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndPoint.swift; sourceTree = "<group>"; };
 		799E0015254DE55100ED7779 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		799E0018254DE57700ED7779 /* Auth+Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Auth+Router.swift"; sourceTree = "<group>"; };
 		799E001B254DE9A100ED7779 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		799E0020254E863800ED7779 /* UIColor+extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+extension.swift"; sourceTree = "<group>"; };
-		799E002A254EE8B900ED7779 /* UIView+extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+extension.swift"; sourceTree = "<group>"; };
+		799E002A254EE8B900ED7779 /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		799EFFBC254CDE9900ED7779 /* Taskly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Taskly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		799EFFBF254CDE9900ED7779 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		799EFFC1254CDE9900ED7779 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -81,7 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				799E0020254E863800ED7779 /* UIColor+extension.swift */,
-				799E002A254EE8B900ED7779 /* UIView+extension.swift */,
+				799E002A254EE8B900ED7779 /* Extension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -113,6 +115,7 @@
 				799EFFD7254CDFEA00ED7779 /* Models */,
 				799EFFD6254CDFE200ED7779 /* Views */,
 				799EFFD5254CDFD700ED7779 /* Controllers */,
+				79098E6A255415A400041B54 /* Notifications.swift */,
 			);
 			path = Taskly;
 			sourceTree = "<group>";
@@ -289,8 +292,9 @@
 				799EFFC2254CDE9900ED7779 /* SceneDelegate.swift in Sources */,
 				799EFFDD254CE4DB00ED7779 /* Constants.swift in Sources */,
 				79E8E55B25509CD900980270 /* TaskDetailsViewController.swift in Sources */,
+				79098E6B255415A400041B54 /* Notifications.swift in Sources */,
 				79E8E5542550750000980270 /* TaskViewController.swift in Sources */,
-				799E002B254EE8B900ED7779 /* UIView+extension.swift in Sources */,
+				799E002B254EE8B900ED7779 /* Extension.swift in Sources */,
 				79E8E53B2550262800980270 /* LoginResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
