@@ -7,20 +7,31 @@
 import UserNotifications
 import UIKit
 
-protocol updateTable {
-    func listTask()
-}
 
-class HomeViewController: UIViewController, updateTable {
-    func listTask() {
-        listTasks()
-    }
-    
+class HomeViewController: UIViewController {
     
     @IBOutlet weak var childView: UIView!
     @IBOutlet weak var userName: UILabel!
     @IBOutlet weak var tableView: UITableView!
     
+    @objc func notification() {
+        print("-------deinit")
+        let center = UNUserNotificationCenter.current()
+        center.removeAllPendingNotificationRequests()
+
+        let _ : UserTasks = userTasks.map{ task in
+            guard let stringDate = task.taskDate,
+                  let  dueDate = self.formatter().date(from: stringDate),
+                  Date().addingTimeInterval(3600) < dueDate else {
+                return task
+            }
+            notifications.scheduleNotification(dueDate: dueDate, taskTitle: task.taskName)
+            return task
+        }
+       
+    }
+    
+    let notifications = Notifications()
     var userTasks = UserTasks()
     var completed = UserTasks()
     var uncompleted = UserTasks()
@@ -44,6 +55,9 @@ class HomeViewController: UIViewController, updateTable {
         tableView.delegate = self
         listTasks()
         addRefresh()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(notification), name: NSNotification.Name(rawValue: "sendNotif"), object: nil)
+        
     }
     
     func addRefresh() {
@@ -87,26 +101,6 @@ class HomeViewController: UIViewController, updateTable {
         }
         tableView.reloadData()
     }
-    
-//    func scheduleNotification() {
-//
-//        print("scheduleNotification")
-//        let center = UNUserNotificationCenter.current()
-//        center.removeAllPendingNotificationRequests()
-//
-//        UIApplication.shared.applicationIconBadgeNumber += 1
-//        let content = UNMutableNotificationContent()
-//        content.title = "Watch out dude"
-//        content.body = "Your Task is due in 10 mins"
-//        content.categoryIdentifier = "alarm"
-//        content.userInfo = ["customData" : "fizzbuzz"]
-//        content.sound = .default
-//        content.badge = UIApplication.shared.applicationIconBadgeNumber as NSNumber
-//
-//        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
-//        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-//        center.add(request)
-//    }
 }
 
 extension HomeViewController: UITableViewDataSource {
@@ -150,6 +144,8 @@ extension HomeViewController: UITableViewDataSource {
         if taskRow.taskDate != nil {
             if taskRow.isCompleted == "0" {
                 cell.dueDateLabel.text = checkRemaining(taskDueDate: taskRow.taskDate!)
+                let dueDate = self.formatter().date(from: taskRow.taskDate!)!
+//                notifications.scheduleNotification(dueDate: dueDate, taskTitle: taskRow.taskName)
             } else {
                 cell.dueDateLabel.text = "completed"
             }
@@ -195,44 +191,6 @@ extension HomeViewController: UITableViewDataSource {
                 }
             }
         }
-        
-//        if days == 0 {
-//            if hours < 0 {
-//                result = "Due date has passed \(abs(hours)) hours ago"
-//            } else {
-//                result = "Due date is in \(hours) hour"
-//            }
-//        }
-//        if hours == 0 {
-//            if mins > 0 {
-//                result = "Due date is in \(mins) mins"
-//            } else {
-//                result = "Due date has passed \(abs(mins)) mins ago"
-//            }
-//        }
-//        if hours < 0 {
-//            cell.dueDateLabel.text = "Due date has passed \(abs(hours)) hours ago"
-//        } else {
-//            cell.dueDateLabel.text = "Due date is in \(hours) hour"
-//        }
-//
-//        if hours == 0 {
-//            if mins > 0 {
-//                cell.dueDateLabel.text = "Due date is in \(mins) mins"
-//                if mins == 1 {
-//                scheduleNotification()
-//                }
-//            } else {
-//                cell.dueDateLabel.text = "Due date has passed \(abs(mins)) mins ago"
-//            }
-//        }
-//            if hours! > 24 {
-//                if days! > 0 {
-//                    cell.dueDateLabel.text = "Due date is in \(days!) mins"
-//                } else {
-//                    cell.dueDateLabel.text = "Due date has passed \(abs(days!)) mins ago"
-//                }
-//            }
         return result
     }
 }
@@ -351,5 +309,12 @@ extension HomeViewController: TaskCellDelegate {
                 }
             }
         }
+    }
+}
+
+extension HomeViewController: updateTable {
+    
+    func handleUpdate() {
+        tableView.reloadData()
     }
 }

@@ -122,11 +122,13 @@ class TaskAPI {
                 if response.statusCode == 422 {
                     print("some input is invalid")
                 }
+                
                 if response.statusCode == 200 {
-                DispatchQueue.main.async {
-                    completion(true)
+                    DispatchQueue.main.async {
+                        completion(true)
+                    }
                 }
-                }
+                
             } catch {
                 print("error:", error)
             }
