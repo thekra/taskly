@@ -15,7 +15,7 @@ class HomeViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     @objc func notification() {
-        print("-------deinit")
+
         let center = UNUserNotificationCenter.current()
         center.removeAllPendingNotificationRequests()
 
@@ -36,19 +36,15 @@ class HomeViewController: UIViewController {
     var completed = UserTasks()
     var uncompleted = UserTasks()
     var userTasksArray = UserTasks()
-    
     var cell = TableViewCell()
+    
     let name: String = UserDefaults.standard.string(forKey: "name") ?? ""
     var dataFilter = 1
     var refreshControl: UIRefreshControl?
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        listTasks()
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+         
         childView.roundCorner(corners: [.topLeft, .topRight], radius: 30)
         userName.text = name
         tableView.dataSource = self
@@ -75,8 +71,8 @@ class HomeViewController: UIViewController {
         TaskAPI.listTasks { (UserTask, success) in
             if success {
                 self.userTasks = UserTask
-                self.uncompleted = self.userTasks.filter { $0.isCompleted == "0"}
-                self.completed = self.userTasks.filter { $0.isCompleted == "1"}
+                self.uncompleted = self.userTasks.filter { $0.isCompleted == "0" }
+                self.completed = self.userTasks.filter { $0.isCompleted == "1" }
                 print(self.userTasks)
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
@@ -88,10 +84,10 @@ class HomeViewController: UIViewController {
     @IBAction func switchFilter(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
         case 0:
-        dataFilter = 0
-        print("dataFilter = 0")
+            dataFilter = 0
+            print("dataFilter = 0")
         case 1:
-        dataFilter = 1
+            dataFilter = 1
             print("dataFilter = 1")
         case 2:
             dataFilter = 2
@@ -127,13 +123,13 @@ extension HomeViewController: UITableViewDataSource {
         
         switch dataFilter {
                 case 0:
-                   userTasksArray = uncompleted
+                   userTasksArray  = uncompleted
                 case 1:
                     userTasksArray = userTasks
                 case 2:
                     userTasksArray = completed
                 default:
-                   userTasksArray = userTasks
+                   userTasksArray  = userTasks
             }
         
         let taskRow = userTasksArray[indexPath.row]
@@ -143,9 +139,13 @@ extension HomeViewController: UITableViewDataSource {
         
         if taskRow.taskDate != nil {
             if taskRow.isCompleted == "0" {
+//                var timeRemaining: String {
+//                    guard let taskDate = taskRow.taskDate else { return "" }
+//                    let date = self.formatter().date(from: (taskDate))
+//                    return Date().timeRemain(until: date!)!
+//                }
+//                print(timeRemaining)
                 cell.dueDateLabel.text = checkRemaining(taskDueDate: taskRow.taskDate!)
-                let dueDate = self.formatter().date(from: taskRow.taskDate!)!
-//                notifications.scheduleNotification(dueDate: dueDate, taskTitle: taskRow.taskName)
             } else {
                 cell.dueDateLabel.text = "completed"
             }
@@ -154,44 +154,14 @@ extension HomeViewController: UITableViewDataSource {
         }
         
         if taskRow.isCompleted == "1" {
-            cell.checkButton.backgroundColor = .purple
+            cell.checkButton.setImage(UIImage(systemName: "checkmark"), for: .normal)
             cell.taskTitle.strikeThrough(true)
             
         } else if taskRow.isCompleted == "0" {
-            cell.checkButton.backgroundColor = .offWhite
+            cell.checkButton.setImage(nil, for: .normal)
             cell.taskTitle.strikeThrough(false)
         }
         return cell
-    }
-    
-    func checkRemaining(taskDueDate: String) -> String {
-        var result = ""
-        
-        let now = Date()
-        let dueDate = self.formatter().date(from: taskDueDate)!
-        let diffComponents = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: dueDate)
-        guard let days = diffComponents.day, let hours = diffComponents.hour, let mins = diffComponents.minute else {
-            return ""
-        }
-        
-        if days >= 1 {
-            result = "Due date is in \(days) days"
-        } else if days < 0 {
-            result = "Due date has passed \(abs(days)) days ago"
-        } else if days == 0 {
-            if hours >= 1 {
-                result = "Due date is in \(hours) hour"
-            } else if hours < 0 {
-                result = "Due date has passed \(abs(hours)) hours ago"
-            } else if hours == 0 {
-                if mins >= 1 {
-                    result = "Due date is in \(mins) mins"
-                } else {
-                    result = "Due date has passed \(abs(mins)) mins ago"
-                }
-            }
-        }
-        return result
     }
 }
     
@@ -206,19 +176,20 @@ extension HomeViewController: UITableViewDataSource {
         
         let index = indexPath.row
         let id = self.userTasksArray[index].taskID
-
+        let isCompleted = self.userTasksArray[index].isCompleted
+        
         let isCompeleteAction = UIContextualAction(style: .normal, title: "",
             handler: { (action, view, completionHandler) in
                 
                 print("id: \(id)")
-                if self.userTasksArray[index].isCompleted == "0" {
-                TaskAPI.isComplete(taskID: id, isCompleted: true) { (success) in
-                    if success {
-                        print("task has been updated successfully")
-                        self.listTasks()
+                if isCompleted == "0" {
+                    TaskAPI.isComplete(taskID: id, isCompleted: true) { (success) in
+                        if success {
+                            print("task has been updated successfully")
+                            self.listTasks()
+                        }
                     }
-                }
-                } else if self.userTasksArray[index].isCompleted == "1" {
+                } else if isCompleted == "1" {
                     TaskAPI.isComplete(taskID: id, isCompleted: false) { (success) in
                         if success {
                             print("task has been updated successfully")
@@ -229,11 +200,15 @@ extension HomeViewController: UITableViewDataSource {
                 completionHandler(true)
           })
         
-        isCompeleteAction.backgroundColor = #colorLiteral(red: 0.5886604786, green: 0.5875415206, blue: 0.7572305799, alpha: 1)
-        isCompeleteAction.image = UIImage(systemName: "checkmark")
+        if isCompleted == "0" {
+            isCompeleteAction.backgroundColor = #colorLiteral(red: 0.5886604786, green: 0.5875415206, blue: 0.7572305799, alpha: 1)
+            isCompeleteAction.image = UIImage(systemName: "checkmark")
+        } else {
+            isCompeleteAction.backgroundColor = #colorLiteral(red: 0.6666666865, green: 0.6666666865, blue: 0.6666666865, alpha: 1)
+            isCompeleteAction.image = UIImage(systemName: "xmark")
+        }
         
         let configuration = UISwipeActionsConfiguration(actions: [isCompeleteAction])
-        
         return configuration
     }
     
@@ -275,11 +250,11 @@ extension HomeViewController: UITableViewDataSource {
             if let des = segue.destination as? TaskDetailsViewController {
                 let row = tableView.indexPathForSelectedRow?.row
                 des.task = userTasksArray[(row)!]
-                des.homeInstance = self
+                des.delegate = self
             }
         case "createTask" :
             if let des = segue.destination as? TaskViewController {
-                des.homeInstance = self
+                des.delegate = self
             }
         default:
             preconditionFailure("Unexpected segue identifier.")
@@ -315,6 +290,6 @@ extension HomeViewController: TaskCellDelegate {
 extension HomeViewController: updateTable {
     
     func handleUpdate() {
-        tableView.reloadData()
+        listTasks()
     }
 }

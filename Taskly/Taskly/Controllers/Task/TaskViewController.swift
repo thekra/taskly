@@ -8,12 +8,12 @@
 import UserNotifications
 import UIKit
 
-protocol updateTable {
+protocol updateTable { // capital
     func handleUpdate()
 }
 
 class TaskViewController: UIViewController {
-
+    
     @IBOutlet weak var taskTitleTF: UITextField!
     @IBOutlet weak var datePicker: UIDatePicker!
     @IBOutlet weak var notesTV: UITextView!
@@ -23,22 +23,23 @@ class TaskViewController: UIViewController {
     @IBOutlet weak var topView: UIView!
     @IBOutlet weak var datePickerStackView: UIStackView!
     
-    var selectedDate = ""
+    var selectedDate: String?
     var delegate: updateTable?
-    let notifications = Notifications()
-    var homeInstance : HomeViewController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        print("datePicker: \(datePicker.date)")
-        selectedDate = self.formatter().string(from: datePicker.date)
-        print(selectedDate)
+        subscribeToKeyboardNotification()
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
         let tap2: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.viewDismiss))
         view.addGestureRecognizer(tap)
         topView.addGestureRecognizer(tap2)
         datePicker.minimumDate = Date()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        unsubscribeToKeyboardNotification()
     }
     
     //MARK: - dismiss keyboard function
@@ -58,16 +59,10 @@ class TaskViewController: UIViewController {
     }
     
     @IBAction func createTask(_ sender: UIButton) {
-        
         createTask()
-//        notifications.scheduleNotification()
     }
     
     func createTask() {
-        
-        if taskTitleTF.text == "" {
-            self.showAlert(title: "Missing Task Title", message: "Please insert a task title")
-        }
         
         var note = ""
         if notesTV.text == nil {
@@ -76,42 +71,74 @@ class TaskViewController: UIViewController {
             note = notesTV.text
         }
         
-        
         var dueDate: Date?
-        var date: String?
         if dueDateSwitch.isOn {
-        dueDate = datePicker.date
-        date = formatter().string(from: dueDate!)
+            dueDate = datePicker.date
+            selectedDate = formatter().string(from: dueDate!)
         } else {
-            date = nil
+            selectedDate = nil
         }
-        print("-------",dueDate)
-        TaskAPI.createTask(taskTitle: taskTitleTF.text!, taskDate: date ?? "", comment: note) { ( success )  in
-            if success {
-                
-                self.homeInstance.listTasks()
-//                self.delegate?.handleUpdate()
-                self.dismiss(animated: true, completion: nil)
+        
+        if taskTitleTF.text == "" {
+            self.showAlert(title: "Missing Task Title", message: "Please insert a task title")
+        } else {
+            TaskAPI.createTask(taskTitle: taskTitleTF.text!, taskDate: selectedDate, comment: note) { ( success )  in
+                if success {
+                    self.delegate?.handleUpdate()
+                    self.dismiss(animated: true, completion: nil)
+                }
             }
         }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        self.delegate?.handleUpdate()
     }
     
     @IBAction func dueDateSwitcher(_ sender: UISwitch) {
         
         if dueDateSwitch.isOn {
             datePickerStackView.isHidden = false
-            let calendar        = Calendar.current
-            let date            = calendar.date(byAdding: .minute, value: 2, to: datePicker.date)! // for testing
-            print("date: \(date)")
-            selectedDate = self.formatter().string(from: date)
+            selectedDate        = self.formatter().string(from: datePicker.date)
         } else {
             datePickerStackView.isHidden = true
-            selectedDate        = ""
+            selectedDate        = nil
         }
+    }
+    
+    // MARK: - Keyboard Functions
+    
+    func subscribeToKeyboardNotification(){
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    func unsubscribeToKeyboardNotification(){
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+        if notesTV.isFirstResponder {
+            print("keyboard will show")
+            let textFieldPosition = notesTV.frame.origin.y + notesTV.frame.size.height
+            
+            if textFieldPosition < (view.frame.size.height - getKeyboardHeight(notification)) {
+                
+                if self.view.frame.origin.y == 0 {
+                    self.view.frame.origin.y -= getKeyboardHeight(notification)
+                }
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(_ notifcation: Notification) {
+        if notesTV.isFirstResponder {
+            self.view.frame.origin.y = 0
+        }
+    }
+    
+    func getKeyboardHeight(_ notification:Notification) -> CGFloat {
+        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue
+        return keyboardFrame.cgRectValue.height
+        
     }
 }

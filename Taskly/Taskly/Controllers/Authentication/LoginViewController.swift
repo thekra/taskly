@@ -19,8 +19,8 @@ class LoginViewController: UIViewController {
     }
     
     func setupUI() {
-        emailTF.layer.cornerRadius = 13
-        passwordTF.layer.cornerRadius = 13
+        emailTF.layer.cornerRadius     = 13
+        passwordTF.layer.cornerRadius  = 13
         loginButton.layer.cornerRadius = 13
     }
     
@@ -30,6 +30,7 @@ class LoginViewController: UIViewController {
         AthuenticationAPI.login(email: "nils.rath@example.net", password: "password") { (LoginResponse, success) in
             if success {
                 print("logged in")
+                UserDefaults.standard.set(true, forKey: "isUserLoggedIn")
                 print("TOKEN: \(LoginResponse.accessToken)")
                 DispatchQueue.main.async {
                     let storyboard = UIStoryboard(name: "Tasks", bundle: nil)

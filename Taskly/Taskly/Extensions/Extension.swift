@@ -52,12 +52,7 @@ extension UIViewController {
     }
 }
 
-extension Date {
 
-    static func - (lhs: Date, rhs: Date) -> TimeInterval {
-        return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
-    }
-}
 
 
 // MARK: - UILabel
@@ -78,6 +73,15 @@ extension UILabel {
                 return
             }
         }
+    }
+}
+
+extension Date {
+    func timeRemain(until endDate: Date) -> String? {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [.minute, .hour, .day]
+        return formatter.string(from: self, to: endDate)
     }
 }
 

@@ -76,8 +76,16 @@ class FirstViewController: UIViewController {
         return pageControl
     }()
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        if UserDefaults.standard.bool(forKey: "isUserLoggedIn") == true {
+            let storyboard = UIStoryboard(name: "Tasks", bundle: nil)
+            let mainTabBarController = storyboard.instantiateViewController(withIdentifier: "home") as! HomeViewController
+//            self.navigationController?.pushViewController(mainTabBarController, animated: false)
+            mainTabBarController.modalPresentationStyle = .fullScreen
+            self.present(mainTabBarController, animated: true, completion: nil)
+        }
         scrollView.delegate = self
         button.layer.cornerRadius  = 13
         button1.layer.cornerRadius = 13

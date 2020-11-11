@@ -28,23 +28,21 @@ class Notifications: NSObject, UNUserNotificationCenterDelegate {
         print("scheduleNotification")
         let center = UNUserNotificationCenter.current()
         
-//        UIApplication.shared.applicationIconBadgeNumber += 1
+        UIApplication.shared.applicationIconBadgeNumber += 1
         let content = UNMutableNotificationContent()
         content.title = "A Lovely Reminder \(taskTitle)"
         content.body = "Don't forget your tasks for today"
         content.categoryIdentifier = "alarm"
         content.userInfo = ["customData" : "fizzbuzz"]
         content.sound = .default
-//        content.badge = UIApplication.shared.applicationIconBadgeNumber as NSNumber
-        content.badge = 1
+        content.badge = UIApplication.shared.applicationIconBadgeNumber as NSNumber
+//        content.badge = 1
 
         
         var dateComponent = DateComponents()
         dateComponent.hour = Calendar.current.component(.hour, from: dueDate.addingTimeInterval(-3600))
         dateComponent.minute = Calendar.current.component(.minute, from: dueDate)
 
-//        let min = diffComponents.minute
-//        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Double(min!), repeats: true)
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponent, repeats: false)
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
         print(trigger)
