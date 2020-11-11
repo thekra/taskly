@@ -47,7 +47,7 @@ class TaskAPI {
         task.resume()
     }
     
-    class func createTask(taskTitle: String, taskDate: String, comment: String, completion: @escaping ( _ succuss: Bool) -> Void) {
+    class func createTask(taskTitle: String, taskDate: String?, comment: String, completion: @escaping ( _ succuss: Bool) -> Void) {
         let token: String = UserDefaults.standard.string(forKey: "token")!
         
         let url = URL(string: URLs.createTask)
